@@ -86,18 +86,8 @@ command! SyntasticJavacEditClasspath call s:EditClasspath()
 function! s:GetMavenClasspath()
     if filereadable('pom.xml')
         if g:syntastic_java_javac_maven_pom_ftime != getftime('pom.xml') || g:syntastic_java_javac_maven_pom_cwd != getcwd()
-            let mvn_classpath_output = split(system('mvn dependency:build-classpath'),"\n")
-            let class_path_next = 0
-            for line in mvn_classpath_output
-                if class_path_next == 1
-                    let mvn_classpath = line
-                    break
-                endif
-                if match(line,'Dependencies classpath:') >= 0
-                    let class_path_next = 1
-                endif
-            endfor
-            let mvn_classpath = s:AddToClasspath(mvn_classpath,'target/classes')
+            let mvn_classpath_output = system('mvn -q dependency:build-classpath -Dmdep.outputFile=/dev/stdout')
+            let mvn_classpath = s:AddToClasspath(mvn_classpath_output,'target/classes')
             let g:syntastic_java_javac_maven_pom_cwd = getcwd()
             let g:syntastic_java_javac_maven_pom_ftime = getftime('pom.xml')
             let g:syntastic_java_javac_maven_pom_classpath = mvn_classpath
